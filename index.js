@@ -53,7 +53,7 @@ var deepDiffMapper = function () {
         }
 
         var value2 = undefined;
-        if('undefined' != typeof (obj2[key])) {
+        if('undefined' !== typeof (obj2[key])) {
           value2 = obj2[key];
         }
 
@@ -74,10 +74,10 @@ var deepDiffMapper = function () {
       if(value1 === value2) {
         return this.VALUE_UNCHANGED;
       }
-      if('undefined' == typeof (value1)) {
+      if('undefined' === typeof (value1)) {
         return this.VALUE_CREATED;
       }
-      if('undefined' == typeof (value2)) {
+      if('undefined' === typeof (value2)) {
         return this.VALUE_DELETED;
       }
 
@@ -158,8 +158,8 @@ var updateExpressionGenerator = function (compareResult, path, excludeFields) {
 
   var wholeList = filterOutDeleteFields(compareResult, null);
   wholeList.updateList.forEach(function (expr) {
-    if(request.UpdateExpression !== "")
-      request.UpdateExpression += ", ";
+    if(request.UpdateExpression !== '')
+      request.UpdateExpression += ', ';
     else
       request.UpdateExpression += "SET ";
 
@@ -193,23 +193,6 @@ var updateExpressionGenerator = function (compareResult, path, excludeFields) {
   return request;
 };
 
-
-
-module.exports.getUpdateExpression = function (original, updates) {
-  return new Promise(function (resolve, reject) {
-      var merged = merge(original, updates);
-
-      console.log(merged);
-
-      resolve(deepDiffMapper.map(
-        original, merged
-      ));
-    })
-    .then(function (diff) {
-      console.log(JSON.stringify(diff, null, 4));
-      return updateExpressionGenerator(diff, null);
-    });
-};
 
 var removeExpressionGenerator = function (original, removes, compareResult,
   path, excludeFields) {
@@ -313,13 +296,31 @@ var removeExpressionGenerator = function (original, removes, compareResult,
   return request;
 };
 
-module.exports.getRemoveExpression = function (original, removes) {
-  return new Promise(function (resolve, reject) {
-      resolve(deepDiffMapper.map(
-        removes, original
-      ));
-    })
-    .then(function (diff) {
-      return removeExpressionGenerator(original, removes, diff, null);
-    });
-};
+module.exports = {
+  getRemoveExpression: function (original, removes) {
+    return new Promise(function (resolve, reject) {
+        resolve(deepDiffMapper.map(
+          removes, original
+        ));
+      })
+      .then(function (diff) {
+        return removeExpressionGenerator(original, removes, diff, null);
+      });
+  },
+
+  getUpdateExpression: function (original, updates) {
+    return new Promise(function (resolve, reject) {
+        var merged = merge(original, updates);
+
+        console.log(merged);
+
+        resolve(deepDiffMapper.map(
+          original, merged
+        ));
+      })
+      .then(function (diff) {
+        console.log(JSON.stringify(diff, null, 4));
+        return updateExpressionGenerator(diff, null);
+      });
+  }
+}
