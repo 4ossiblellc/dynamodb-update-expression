@@ -5,7 +5,9 @@ A small library providing the solution to generate DynamoDB update expression by
 
 ## Installation
 
+  ```sh
   npm install dynamodb-update-expression --save
+  ```
 
 ## Usage
 
@@ -88,6 +90,45 @@ A small library providing the solution to generate DynamoDB update expression by
     }
   };
   ```
+
+## Output
+
+Sample output
+=============
+
+```js
+{
+    "UpdateExpression": "set lastName = :lastName, phones = :phones, family = :family, profile.business.website = :profilebusinesswebsite, profile.business.phone = :profilebusinessphone, profile.office = :profileoffice",
+    "ExpressionAttributeValues": {
+        ":lastName": "L. Doe",
+        ":phones": [
+            "1111-2222-333",
+            "5555-4444-555",
+            "2222-4444-555"
+        ],
+        ":family": [
+            {
+                "id": 2,
+                "role": "mother"
+            }
+        ],
+        ":profilebusinesswebsite": "www.acmeinc.com",
+        ":profilebusinessphone": "111222333",
+        ":profileoffice": "1234 Market Street"
+    }
+}
+```
+
+```js
+{
+    "UpdateExpression": "remove profile.business.website set phones = :phones",
+    "ExpressionAttributeValues": {
+        ":phones": [
+            "5555-4444-555"
+        ]
+    }
+}
+```
 
 ## Tests
 
