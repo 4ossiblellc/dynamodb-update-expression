@@ -106,7 +106,10 @@ var updateExpressionGenerator = function (compareResult, path, excludeFields) {
   };
 
   var filterOutDeleteFields = function (obj, path) {
-    var updateList = [];
+    var wholeList = {
+      updateList: [],
+      removeList: []
+    };
     var name;
     for(var i in obj) {
       // console.log(i + " = " + JSON.stringify(obj[i], null, 4) +
@@ -120,10 +123,16 @@ var updateExpressionGenerator = function (compareResult, path, excludeFields) {
 
       if(obj.hasOwnProperty(i) && typeof obj[i] === "object") {
 
-        if((obj[i].type === "updated" || obj[i].type === "created") && obj[
+        if(obj[i].type === "updated" && (obj[i].data === "" || obj[i].data ===
+            undefined)) {
+          wholeList.removeList.push({
+            "name": (path ? path + "." : "") + i,
+          });
+        } else if((obj[i].type === "updated" || obj[i].type === "created") &&
+          obj[
             i].data) {
           //console.log("pushed => " + obj[i].dataType, (path ?  path + "." : "") +  i + " = " + obj[i].data);
-          updateList.push({
+          wholeList.updateList.push({
             "name": (path ? path + "." : "") + i,
             "value": obj[i].data,
             "dataType": obj[i].dataType
@@ -135,27 +144,45 @@ var updateExpressionGenerator = function (compareResult, path, excludeFields) {
           var partial = isNaN(parseInt(i, 10)) ? "." + i : "[" + i + "]";
           name = path !== null ? path + partial : i;
           // console.log("- nested object ->", name, obj[i].dataType);
-          updateList = updateList.concat(filterOutDeleteFields(obj[i], name));
+          var childList = filterOutDeleteFields(obj[i], name);
+          wholeList.updateList = wholeList.updateList.concat(childList.updateList);
+          wholeList.removeList = wholeList.removeList.concat(childList.removeList);
         }
       }
     }
 
     // console.log("returning updateList: " + updateList);
-    return updateList;
+    return wholeList;
   };
 
-  var updateList = filterOutDeleteFields(compareResult, null);
-  updateList.forEach(function (expr) {
+  var wholeList = filterOutDeleteFields(compareResult, null);
+  wholeList.updateList.forEach(function (expr) {
     if(request.UpdateExpression !== "")
       request.UpdateExpression += ", ";
     else
-      request.UpdateExpression += "set ";
+      request.UpdateExpression += "SET ";
 
     var propName = expr.name.replace(/\./g, "").replace(/_/g, "").replace(
       /&/g, "").replace(/_/g, "").replace(/\[/g, "").replace(/\]/g, "");
 
     request.UpdateExpression += expr.name + " = :" + propName + "";
     request.ExpressionAttributeValues[":" + propName] = expr.value;
+  });
+
+  wholeList.removeList.forEach(function (expr, index) {
+    if(index === 0) {
+      request.UpdateExpression += (request.UpdateExpression.length > 0 ?
+        " " : "") + "REMOVE ";
+    } else {
+      request.UpdateExpression += ", ";
+    }
+
+    var propName = expr.name.replace(/\./g, "").replace(/_/g, "").replace(
+      /&/g, "").replace(/_/g, "").replace(/\[/g, "").replace(/\]/g,
+      "");
+
+    request.UpdateExpression += "#" + propName;
+    request.ExpressionAttributeNames["#" + propName] = expr.name;
   });
 
   if(isEmpty(request.ExpressionAttributeNames)) {
@@ -241,7 +268,7 @@ var removeExpressionGenerator = function (original, removes, compareResult,
       if(request.UpdateExpression !== "")
         request.UpdateExpression += ", ";
       else
-        request.UpdateExpression += "remove ";
+        request.UpdateExpression += "REMOVE ";
 
       request.UpdateExpression += expr.name + " ";
     } else {

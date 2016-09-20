@@ -71,7 +71,8 @@ A small library providing the solution to generate DynamoDB update expression by
       "business": {
         "website": "www.acmeinc.com", // Update this element
         "phone": "111222333" // Add this element
-      }
+      },
+      "company": "" // Remove this element because it is an empty string
     }
   };
   ```
