@@ -62,53 +62,41 @@ var removes = {
   }
 };
 
-
 describe('update expression', function () {
   it('should generate minimal update expression', function (done) {
     this.timeout(30000);
-    generator.getUpdateExpression(original, updates)
-      .then(function (result) {
-        console.log("Test Result", JSON.stringify(result, null, 4));
-        test.should(result.UpdateExpression).be.equal(
-          'SET lastName = :lastName, phones = :phones, family = :family, profile.business.website = :profilebusinesswebsite, profile.business.phone = :profilebusinessphone, profile.office = :profileoffice REMOVE #profilecompany'
-        );
-        test.should(result.ExpressionAttributeNames["#profilecompany"])
-          .be
-          .equal('profile.company');
-        test.should(result.ExpressionAttributeValues[":lastName"]).be
-          .equal('L. Doe');
-        test.should(result.ExpressionAttributeValues[
-          ":profilebusinesswebsite"]).be.equal('www.acmeinc.com');
-        test.object(result.ExpressionAttributeValues[":phones"]).isArray();
-        test.object(result.ExpressionAttributeValues[":family"]).isArray();
-        test.should(result.ExpressionAttributeValues[":family"][0].role)
-          .be.equal('mother');
-        done();
-
-      }).catch(function (err) {
-        done(err);
-      });
-
+    var result = generator.getUpdateExpression(original, updates);
+    console.log("Test Result", JSON.stringify(result, null, 4));
+    test.should(result.UpdateExpression).be.equal(
+      'SET lastName = :lastName, phones = :phones, family = :family, profile.business.website = :profilebusinesswebsite, profile.business.phone = :profilebusinessphone, profile.office = :profileoffice REMOVE #profilecompany'
+    );
+    test.should(result.ExpressionAttributeNames["#profilecompany"])
+      .be
+      .equal('profile.company');
+    test.should(result.ExpressionAttributeValues[":lastName"]).be
+      .equal('L. Doe');
+    test.should(result.ExpressionAttributeValues[
+      ":profilebusinesswebsite"]).be.equal('www.acmeinc.com');
+    test.object(result.ExpressionAttributeValues[":phones"]).isArray();
+    test.object(result.ExpressionAttributeValues[":family"]).isArray();
+    test.should(result.ExpressionAttributeValues[":family"][0].role)
+      .be.equal('mother');
+    done();
   });
 
   it(
     'should generate minimal removes expression (element & list element)',
     function (done) {
       this.timeout(30000);
-      generator.getRemoveExpression(original, removes)
-        .then(function (result) {
-          console.log("Test Result", JSON.stringify(result, null, 4));
-          test.should(result.UpdateExpression).be.equal(
-            'REMOVE profile.business.website set phones = :phones');
-          test.object(result.ExpressionAttributeValues[":phones"]).isArray();
-          test.should(result.ExpressionAttributeValues[":phones"][0])
-            .be
-            .equal('5555-4444-555');
-          done();
-
-        }).catch(function (err) {
-          done(err);
-        });
+      var result = generator.getRemoveExpression(original, removes);
+      console.log("Test Result", JSON.stringify(result, null, 4));
+      test.should(result.UpdateExpression).be.equal(
+        'REMOVE profile.business.website set phones = :phones');
+      test.object(result.ExpressionAttributeValues[":phones"]).isArray();
+      test.should(result.ExpressionAttributeValues[":phones"][0])
+        .be
+        .equal('5555-4444-555');
+      done();
 
     });
 

@@ -3,7 +3,6 @@
  * Created by jazarja, 4ossiblellc on 9/20/16.
  */
 
-var Promise = require('bluebird');
 var merge = require('deepmerge');
 
 Array.prototype.diff = function (a) {
@@ -296,31 +295,20 @@ var removeExpressionGenerator = function (original, removes, compareResult,
   return request;
 };
 
+
+exports.generateRemoveExpression = function (original, removes) {
+  return removeExpressionGenerator(original, removes, deepDiffMapper.map(
+    removes, original), null);
+};
+
+exports.generateUpdateExpression = function (original, updates) {
+  var merged = merge(original, updates);
+  return updateExpressionGenerator(deepDiffMapper.map(
+    original, merged
+  ), null);
+};
+
 module.exports = {
-  getRemoveExpression: function (original, removes) {
-    return new Promise(function (resolve, reject) {
-        resolve(deepDiffMapper.map(
-          removes, original
-        ));
-      })
-      .then(function (diff) {
-        return removeExpressionGenerator(original, removes, diff, null);
-      });
-  },
-
-  getUpdateExpression: function (original, updates) {
-    return new Promise(function (resolve, reject) {
-        var merged = merge(original, updates);
-
-        console.log(merged);
-
-        resolve(deepDiffMapper.map(
-          original, merged
-        ));
-      })
-      .then(function (diff) {
-        console.log(JSON.stringify(diff, null, 4));
-        return updateExpressionGenerator(diff, null);
-      });
-  }
-}
+  getRemoveExpression: exports.generateRemoveExpression,
+  getUpdateExpression: exports.generateUpdateExpression
+};
