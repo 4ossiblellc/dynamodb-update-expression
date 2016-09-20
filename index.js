@@ -1,5 +1,6 @@
+'use strict';
 /**
- * Created by jazarja on 9/20/16.
+ * Created by jazarja, 4ossiblellc on 9/20/16.
  */
 
 var Promise = require('bluebird');
@@ -194,7 +195,7 @@ var updateExpressionGenerator = function (compareResult, path, excludeFields) {
 
 
 
-exports.getUpdateExpression = function (original, updates) {
+module.exports.getUpdateExpression = function (original, updates) {
   return new Promise(function (resolve, reject) {
       var merged = merge(original, updates);
 
@@ -312,7 +313,7 @@ var removeExpressionGenerator = function (original, removes, compareResult,
   return request;
 };
 
-exports.getRemoveExpression = function (original, removes) {
+module.exports.getRemoveExpression = function (original, removes) {
   return new Promise(function (resolve, reject) {
       resolve(deepDiffMapper.map(
         removes, original

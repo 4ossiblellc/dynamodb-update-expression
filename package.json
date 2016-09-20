@@ -1,10 +1,17 @@
 {
   "name": "dynamodb-update-expression",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "A small library providing the solution to return the update expression.",
   "main": "index.js",
   "scripts": {
-    "test": "mocha test.js"
+    "test": "mocha test.js",
+    "build:browser": "browserify index.js --standalone dynamodb-update-expression | uglifyjs -c > dist/dynamodb-update-expression.min.js",
+    "cov": "istanbul cover node_modules/.bin/_mocha -- --recursive",
+    "lint": "jshint ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/4ossiblellc/dynamodb-update-expression.git"
   },
   "author": "Eric So <4ossible@gmail.com>, James Azarja <jazarja@yahoo.com>",
   "licenses": [
@@ -20,12 +27,18 @@
     "expression"
   ],
   "dependencies": {
+    "dispatch-recursive": "^2.0.0",
     "bluebird": "^3.4.6",
     "deepmerge": "^0.2.10"
   },
   "devDependencies": {
     "chai": "^3.5.0",
-    "mocha": "^3.0.2",
+    "browserify": "^13.0.1",
+    "jshint": "^2.9.2",
+    "leche": "^2.1.1",
+    "mocha": "^2.4.5",
+    "sinon": "^1.17.4",
+    "uglifyjs": "^2.4.10",
     "unit.js": "^2.0.0"
   }
 }
