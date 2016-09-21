@@ -268,7 +268,7 @@ var removeExpressionGenerator = function (original, removes, compareResult,
         request.UpdateExpression += ", ";
       } else {
         firstElement = false;
-        request.UpdateExpression += "set ";
+        request.UpdateExpression += "SET ";
       }
 
       var value = null;
@@ -281,7 +281,7 @@ var removeExpressionGenerator = function (original, removes, compareResult,
       {
         if (typeof itemUniqueId==='undefined' || itemUniqueId==null) {
           console.error("Found object in a list, but no itemUniqueId parameter specified");
-          value = _.xor(_.get(original,expr.name),  _.get(removes,expr.name), "id");
+          value = _.xorBy(_.get(original,expr.name),  _.get(removes,expr.name), "id");
         } else
         {
           value = _.xorBy(_.get(original,expr.name),  _.get(removes,expr.name), itemUniqueId);
