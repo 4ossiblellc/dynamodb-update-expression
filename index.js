@@ -4,12 +4,7 @@
  */
 
 var merge = require('deepmerge');
-
-Array.prototype.diff = function (a) {
-  return this.filter(function (i) {
-    return a.indexOf(i) < 0;
-  });
-};
+var _ = require('lodash');
 
 var isEmpty = function (map) {
   for(var key in map) {
@@ -277,7 +272,7 @@ var removeExpressionGenerator = function (original, removes, compareResult,
       }
 
       // Remove any elements that specified in removes json
-      var value = original[expr.name].diff(removes[expr.name]);
+      var value = _.xorBy (_.get(original,expr.name),  _.get(removes,expr.name));
 
       request.UpdateExpression += expr.name + " = :" + propName + "";
       request.ExpressionAttributeValues[":" + propName] = value;
