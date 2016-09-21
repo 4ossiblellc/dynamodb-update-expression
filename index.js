@@ -41,12 +41,13 @@ var deepDiffMapper = function () {
         return {
           type: this.compareValues(obj1, obj2),
           data: obj2,
-          dataType: "list",
+          dataType: "list"
         };
       }
 
       var diff = {};
-      for(var key in obj1) {
+      var key;
+      for(key in obj1) {
         if(this.isFunction(obj1[key])) {
           continue;
         }
@@ -58,8 +59,8 @@ var deepDiffMapper = function () {
 
         diff[key] = this.map(obj1[key], value2);
       }
-      for(var key in obj2) {
-        if(this.isFunction(obj2[key]) || ('undefined' != typeof (diff[key]))) {
+      for(key in obj2) {
+        if(this.isFunction(obj2[key]) || ('undefined' !== typeof (diff[key]))) {
           continue;
         }
 
@@ -247,12 +248,12 @@ var removeExpressionGenerator = function (original, removes, compareResult,
     var propName = expr.name.replace(/\./g, "").replace(/_/g, "").replace(
       /&/g, "").replace(/_/g, "").replace(/\[/g, "").replace(/\]/g, "");
 
-    if(expr.dataType != "list") {
-      if(request.UpdateExpression !== "")
+    if(expr.dataType !== "list") {
+      if(request.UpdateExpression !== "") {
         request.UpdateExpression += ", ";
-      else
+      } else {
         request.UpdateExpression += "REMOVE ";
-
+      }
       request.UpdateExpression += expr.name + " ";
     } else {
 
@@ -265,12 +266,12 @@ var removeExpressionGenerator = function (original, removes, compareResult,
     var propName = expr.name.replace(/\./g, "").replace(/_/g, "").replace(
       /&/g, "").replace(/_/g, "").replace(/\[/g, "").replace(/\]/g, "");
 
-    if(expr.dataType != "list") {
+    if(expr.dataType !== "list") {
 
     } else {
-      if(!firstElement)
+      if(!firstElement) {
         request.UpdateExpression += ", ";
-      else {
+      } else {
         firstElement = false;
         request.UpdateExpression += "set ";
       }
