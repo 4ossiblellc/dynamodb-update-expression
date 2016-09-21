@@ -190,7 +190,7 @@ var updateExpressionGenerator = function (compareResult, path, excludeFields) {
 
 
 var removeExpressionGenerator = function (original, removes, compareResult,
-  path, excludeFields) {
+  path, itemUniqueId) {
 
   var request = {
     UpdateExpression: "",
@@ -271,8 +271,23 @@ var removeExpressionGenerator = function (original, removes, compareResult,
         request.UpdateExpression += "set ";
       }
 
+      var value = null;
       // Remove any elements that specified in removes json
-      var value = _.xorBy (_.get(original,expr.name),  _.get(removes,expr.name));
+      if
+        (
+          typeof _.get(original,expr.name)[0] === "object" ||
+          typeof _.get(removes,expr.name)[0] === "object"
+        )
+      {
+        if (typeof itemUniqueId==='undefined' || itemUniqueId==null) {
+          console.error("Found object in a list, but no itemUniqueId parameter specified");
+          value = _.xor(_.get(original,expr.name),  _.get(removes,expr.name), "id");
+        } else
+        {
+          value = _.xorBy(_.get(original,expr.name),  _.get(removes,expr.name), itemUniqueId);
+        }
+      } else
+        value = _.xor(_.get(original,expr.name),  _.get(removes,expr.name));
 
       request.UpdateExpression += expr.name + " = :" + propName + "";
       request.ExpressionAttributeValues[":" + propName] = value;
@@ -292,9 +307,9 @@ var removeExpressionGenerator = function (original, removes, compareResult,
 };
 
 
-exports.generateRemoveExpression = function (original, removes) {
+exports.generateRemoveExpression = function (original, removes, itemUniqueId) {
   return removeExpressionGenerator(original, removes, deepDiffMapper.map(
-    removes, original), null);
+    removes, original), null, itemUniqueId);
 };
 
 exports.generateUpdateExpression = function (original, updates) {

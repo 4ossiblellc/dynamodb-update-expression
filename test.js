@@ -36,6 +36,10 @@ var updates = {
   // List of object
   "family": [
     {
+      "id": 1,
+      "role": "father"
+    },
+    {
       "id": 2,
       "role": "mother"
     } // Original will be REPLACED by this (because of: deepmerge library bug)
@@ -52,6 +56,12 @@ var updates = {
 };
 
 var removes = {
+  "family": [
+    {
+      "id": 1,
+      "role": "father"
+    }
+  ],
   "phones": [
         "1111-2222-333" // Will remove this number
     ],
@@ -81,7 +91,7 @@ describe('update expression', function () {
     test.object(result.ExpressionAttributeValues[":phones"]).isArray();
     test.object(result.ExpressionAttributeValues[":family"]).isArray();
     test.should(result.ExpressionAttributeValues[":family"][0].role)
-      .be.equal('mother');
+      .be.equal('father');
     done();
   });
 
@@ -89,11 +99,13 @@ describe('update expression', function () {
     'should generate minimal removes expression (element & list element)',
     function (done) {
       this.timeout(30000);
-      var result = generator.getRemoveExpression(original, removes);
+      var result = generator.getRemoveExpression(original, removes, "id");
       console.log("Test Result", JSON.stringify(result, null, 4));
       test.should(result.UpdateExpression).be.equal(
-        'REMOVE profile.business.website set phones = :phones');
+        'REMOVE profile.business.website set family = :family, phones = :phones');
       test.object(result.ExpressionAttributeValues[":phones"]).isArray();
+      test.object(result.ExpressionAttributeValues[":family"]).isArray();
+      test.should(result.ExpressionAttributeValues[":family"]).have.length(0);
       test.should(result.ExpressionAttributeValues[":phones"][0])
         .be
         .equal('5555-4444-555');
