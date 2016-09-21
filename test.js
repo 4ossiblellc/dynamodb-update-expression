@@ -102,10 +102,12 @@ describe('update expression', function () {
       var result = generator.getRemoveExpression(original, removes, "id");
       console.log("Test Result", JSON.stringify(result, null, 4));
       test.should(result.UpdateExpression).be.equal(
-        'REMOVE profile.business.website set family = :family, phones = :phones');
+        'REMOVE profile.business.website SET family = :family, phones = :phones'
+      );
       test.object(result.ExpressionAttributeValues[":phones"]).isArray();
       test.object(result.ExpressionAttributeValues[":family"]).isArray();
-      test.should(result.ExpressionAttributeValues[":family"]).have.length(0);
+      test.should(result.ExpressionAttributeValues[":family"]).have.length(
+        0);
       test.should(result.ExpressionAttributeValues[":phones"][0])
         .be
         .equal('5555-4444-555');
