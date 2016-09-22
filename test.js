@@ -51,7 +51,7 @@ var updates = {
       "website": "www.acmeinc.com", // Update this element
       "phone": "111222333" // Add this element
     },
-    "company": ""
+    "company": "" // Remove this element because it is an empty string
   }
 };
 
