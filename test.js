@@ -79,7 +79,7 @@ describe('update expression', function () {
     var result = generator.getUpdateExpression(original, updates);
     console.log("Test Result", JSON.stringify(result, null, 4));
     test.should(result.UpdateExpression).be.equal(
-      'SET lastName = :lastName, phones = :phones, family = :family, profile.business.website = :profilebusinesswebsite, profile.business.phone = :profilebusinessphone, profile.office = :profileoffice REMOVE #profilecompany'
+      'SET #lastName = :lastName, #phones = :phones, #family = :family, #profilebusinesswebsite = :profilebusinesswebsite, #profilebusinessphone = :profilebusinessphone, #profileoffice = :profileoffice REMOVE #profilecompany'
     );
     test.should(result.ExpressionAttributeNames["#profilecompany"])
       .be
@@ -102,7 +102,7 @@ describe('update expression', function () {
       var result = generator.getRemoveExpression(original, removes, "id");
       console.log("Test Result", JSON.stringify(result, null, 4));
       test.should(result.UpdateExpression).be.equal(
-        'REMOVE profile.business.website SET family = :family, phones = :phones'
+        'REMOVE #profilebusinesswebsite SET #family = :family, #phones = :phones'
       );
       test.object(result.ExpressionAttributeValues[":phones"]).isArray();
       test.object(result.ExpressionAttributeValues[":family"]).isArray();

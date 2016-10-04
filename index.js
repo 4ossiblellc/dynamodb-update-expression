@@ -93,8 +93,10 @@ var deepDiffMapper = function () {
   };
 }();
 
-var updateExpressionGenerator = function (compareResult, path, excludeFields) {
+var updateExpressionGenerator = function (compareResult, options, path,
+  excludeFields) {
 
+  console.log(JSON.stringify(compareResult, null, 4));
   var request = {
     UpdateExpression: "",
     ExpressionAttributeNames: {},
@@ -161,7 +163,8 @@ var updateExpressionGenerator = function (compareResult, path, excludeFields) {
     var propName = expr.name.replace(/\./g, "").replace(/_/g, "").replace(
       /&/g, "").replace(/_/g, "").replace(/\[/g, "").replace(/\]/g, "");
 
-    request.UpdateExpression += expr.name + " = :" + propName + "";
+    request.UpdateExpression += "#" + propName + " = :" + propName + "";
+    request.ExpressionAttributeNames["#" + propName] = expr.name;
     request.ExpressionAttributeValues[":" + propName] = expr.value;
   });
 
@@ -249,7 +252,8 @@ var removeExpressionGenerator = function (original, removes, compareResult,
       } else {
         request.UpdateExpression += "REMOVE ";
       }
-      request.UpdateExpression += expr.name + " ";
+      request.UpdateExpression += "#" + propName + " ";
+      request.ExpressionAttributeNames["#" + propName] = propName;
     } else {
 
     }
@@ -273,23 +277,25 @@ var removeExpressionGenerator = function (original, removes, compareResult,
 
       var value = null;
       // Remove any elements that specified in removes json
-      if
-        (
-          typeof _.get(original,expr.name)[0] === "object" ||
-          typeof _.get(removes,expr.name)[0] === "object"
-        )
-      {
-        if (typeof itemUniqueId==='undefined' || itemUniqueId==null) {
-          console.error("Found object in a list, but no itemUniqueId parameter specified");
-          value = _.xorBy(_.get(original,expr.name),  _.get(removes,expr.name), "id");
-        } else
-        {
-          value = _.xorBy(_.get(original,expr.name),  _.get(removes,expr.name), itemUniqueId);
+      if(
+        typeof _.get(original, expr.name)[0] === "object" ||
+        typeof _.get(removes, expr.name)[0] === "object"
+      ) {
+        if(typeof itemUniqueId === 'undefined' || itemUniqueId == null) {
+          console.error(
+            "Found object in a list, but no itemUniqueId parameter specified"
+          );
+          value = _.xorBy(_.get(original, expr.name), _.get(removes, expr
+            .name), "id");
+        } else {
+          value = _.xorBy(_.get(original, expr.name), _.get(removes, expr
+            .name), itemUniqueId);
         }
       } else
-        value = _.xor(_.get(original,expr.name),  _.get(removes,expr.name));
+        value = _.xor(_.get(original, expr.name), _.get(removes, expr.name));
 
-      request.UpdateExpression += expr.name + " = :" + propName + "";
+      request.UpdateExpression += "#" + propName + " = :" + propName + "";
+      request.ExpressionAttributeNames["#" + propName] = expr.name;
       request.ExpressionAttributeValues[":" + propName] = value;
     }
   });
@@ -312,11 +318,11 @@ exports.generateRemoveExpression = function (original, removes, itemUniqueId) {
     removes, original), null, itemUniqueId);
 };
 
-exports.generateUpdateExpression = function (original, updates) {
+exports.generateUpdateExpression = function (original, updates, options) {
   var merged = merge(original, updates);
   return updateExpressionGenerator(deepDiffMapper.map(
     original, merged
-  ), null);
+  ), options, null);
 };
 
 module.exports = {
