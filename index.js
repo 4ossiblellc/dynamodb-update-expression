@@ -253,7 +253,7 @@ var removeExpressionGenerator = function (original, removes, compareResult,
         request.UpdateExpression += "REMOVE ";
       }
       request.UpdateExpression += "#" + propName + " ";
-      request.ExpressionAttributeNames["#" + propName] = propName;
+      request.ExpressionAttributeNames["#" + propName] = expr.name;
     } else {
 
     }

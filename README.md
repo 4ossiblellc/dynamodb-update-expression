@@ -99,7 +99,16 @@ Sample output
 
 ```js
 {
-    "UpdateExpression": "set lastName = :lastName, phones = :phones, family = :family, profile.business.website = :profilebusinesswebsite, profile.business.phone = :profilebusinessphone, profile.office = :profileoffice",
+    "UpdateExpression": "SET #lastName = :lastName, #phones = :phones, #family = :family, #profilebusinesswebsite = :profilebusinesswebsite, #profilebusinessphone = :profilebusinessphone, #profileoffice = :profileoffice REMOVE #profilecompany",
+    "ExpressionAttributeNames": {
+        "#lastName": "lastName",
+        "#phones": "phones",
+        "#family": "family",
+        "#profilebusinesswebsite": "profile.business.website",
+        "#profilebusinessphone": "profile.business.phone",
+        "#profileoffice": "profile.office",
+        "#profilecompany": "profile.company"
+    },
     "ExpressionAttributeValues": {
         ":lastName": "L. Doe",
         ":phones": [
@@ -122,7 +131,12 @@ Sample output
 
 ```js
 {
-    "UpdateExpression": "remove profile.business.website set phones = :phones",
+    "UpdateExpression": "REMOVE #profilebusinesswebsite SET #family = :family, #phones = :phones",
+    "ExpressionAttributeNames": {
+        "#profilebusinesswebsite": "profilebusinesswebsite",
+        "#family": "family",
+        "#phones": "phones"
+    },
     "ExpressionAttributeValues": {
         ":phones": [
             "5555-4444-555"

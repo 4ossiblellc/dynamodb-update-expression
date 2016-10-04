@@ -104,9 +104,14 @@ describe('update expression', function () {
       test.should(result.UpdateExpression).be.equal(
         'REMOVE #profilebusinesswebsite SET #family = :family, #phones = :phones'
       );
-      test.object(result.ExpressionAttributeValues[":phones"]).isArray();
-      test.object(result.ExpressionAttributeValues[":family"]).isArray();
-      test.should(result.ExpressionAttributeValues[":family"]).have.length(
+      test.should(result.ExpressionAttributeNames[
+        "#profilebusinesswebsite"]).be.equal("profile.business.website");
+      test.object(result.ExpressionAttributeValues[
+        ":phones"]).isArray();
+      test.object(result.ExpressionAttributeValues[
+        ":family"]).isArray();
+      test.should(result.ExpressionAttributeValues[
+        ":family"]).have.length(
         0);
       test.should(result.ExpressionAttributeValues[":phones"][0])
         .be
