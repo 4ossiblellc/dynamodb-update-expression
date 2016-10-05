@@ -131,15 +131,18 @@ Sample output
 
 ```js
 {
-    "UpdateExpression": "REMOVE #profilebusinesswebsite SET #family = :family, #phones = :phones",
+    "UpdateExpression": "REMOVE #family, #profile.#business.#website SET #phones = :phones",
     "ExpressionAttributeNames": {
-        "#profilebusinesswebsite": "profile.business.website",
+        "#profile": "profile",
+        "#business": "business",
+        "#website": "website",
         "#family": "family",
         "#phones": "phones"
     },
     "ExpressionAttributeValues": {
         ":phones": [
-            "5555-4444-555"
+            "5555-4444-555",
+            "9999-8888-777"
         ]
     }
 }

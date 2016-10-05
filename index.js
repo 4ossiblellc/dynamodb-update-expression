@@ -155,17 +155,27 @@ var updateExpressionGenerator = function (compareResult, options, path,
 
   var wholeList = filterOutDeleteFields(compareResult, null);
   wholeList.updateList.forEach(function (expr) {
-    if(request.UpdateExpression !== '')
+    if(request.UpdateExpression !== '') {
       request.UpdateExpression += ', ';
-    else
+    } else {
       request.UpdateExpression += "SET ";
+    }
 
-    var propName = expr.name.replace(/\./g, "").replace(/_/g, "").replace(
-      /&/g, "").replace(/_/g, "").replace(/\[/g, "").replace(/\]/g, "");
+    // change this logic to have # in front of .
+    var propName = expr.name.replace(/&/g, "").replace(/_/g, "").replace(
+      /\[/g, "").replace(/\]/g, "");
 
-    request.UpdateExpression += "#" + propName + " = :" + propName + "";
-    request.ExpressionAttributeNames["#" + propName] = expr.name;
-    request.ExpressionAttributeValues[":" + propName] = expr.value;
+    var splittedByDotPropName = expr.name.split(".");
+    var propNameExpressionName = "#" + splittedByDotPropName.join(".#");
+    splittedByDotPropName.forEach(function (partialName) {
+      request.ExpressionAttributeNames["#" + partialName] =
+        partialName;
+    });
+    var propNameExpressionValue = ":" + propName.replace(/\./g, "");
+
+    request.UpdateExpression += propNameExpressionName + " = " +
+      propNameExpressionValue + " ";
+    request.ExpressionAttributeValues[propNameExpressionValue] = expr.value;
   });
 
   wholeList.removeList.forEach(function (expr, index) {
@@ -176,12 +186,17 @@ var updateExpressionGenerator = function (compareResult, options, path,
       request.UpdateExpression += ", ";
     }
 
-    var propName = expr.name.replace(/\./g, "").replace(/_/g, "").replace(
-      /&/g, "").replace(/_/g, "").replace(/\[/g, "").replace(/\]/g,
-      "");
+    var propName = expr.name.replace(/&/g, "").replace(/_/g, "").replace(
+      /\[/g, "").replace(/\]/g, "");
 
-    request.UpdateExpression += "#" + propName;
-    request.ExpressionAttributeNames["#" + propName] = expr.name;
+    var splittedByDotPropName = expr.name.split(".");
+    var propNameExpressionName = "#" + splittedByDotPropName.join(".#");
+    splittedByDotPropName.forEach(function (partialName) {
+      request.ExpressionAttributeNames["#" + partialName] =
+        partialName;
+    });
+
+    request.UpdateExpression += propNameExpressionName;
   });
 
   if(isEmpty(request.ExpressionAttributeNames)) {
@@ -243,8 +258,10 @@ var removeExpressionGenerator = function (original, removes, compareResult,
   var updateList = filterOutCreateFields(compareResult, null);
 
   updateList.forEach(function (expr) {
-    var propName = expr.name.replace(/\./g, "").replace(/_/g, "").replace(
-      /&/g, "").replace(/_/g, "").replace(/\[/g, "").replace(/\]/g, "");
+    var propName = expr.name.replace(/&/g, "").replace(/_/g, "").replace(
+      /\[/g, "").replace(/\]/g, "");
+
+    var splittedByDotPropName, propNameExpressionName;
 
     if(expr.dataType !== "list") {
       if(request.UpdateExpression !== "") {
@@ -252,35 +269,59 @@ var removeExpressionGenerator = function (original, removes, compareResult,
       } else {
         request.UpdateExpression += "REMOVE ";
       }
-      request.UpdateExpression += "#" + propName + " ";
-      request.ExpressionAttributeNames["#" + propName] = expr.name;
-    } else {
 
+      splittedByDotPropName = expr.name.split(".");
+      propNameExpressionName = "#" + splittedByDotPropName.join(".#");
+      splittedByDotPropName.forEach(function (partialName) {
+        request.ExpressionAttributeNames["#" + partialName] =
+          partialName;
+      });
+
+      request.UpdateExpression += propNameExpressionName + " ";
+    } else if(expr.value && expr.value.length === 0) {
+      if(request.UpdateExpression !== "") {
+        request.UpdateExpression += ", ";
+      } else {
+        request.UpdateExpression += "REMOVE ";
+      }
+
+      splittedByDotPropName = expr.name.split(".");
+      propNameExpressionName = "#" + splittedByDotPropName.join(".#");
+      splittedByDotPropName.forEach(function (partialName) {
+        request.ExpressionAttributeNames["#" + partialName] =
+          partialName;
+      });
+
+      request.UpdateExpression += propNameExpressionName + " ";
     }
   });
 
   // List element updates
   var firstElement = true;
   updateList.forEach(function (expr) {
-    var propName = expr.name.replace(/\./g, "").replace(/_/g, "").replace(
-      /&/g, "").replace(/_/g, "").replace(/\[/g, "").replace(/\]/g, "");
+    var propName = expr.name.replace(/&/g, "").replace(/_/g, "").replace(
+      /\[/g, "").replace(/\]/g, "");
+
+    var splittedByDotPropName, propNameExpressionName,
+      propNameExpressionValue;
 
     if(expr.dataType !== "list") {
 
     } else {
+
       if(!firstElement) {
         request.UpdateExpression += ", ";
       } else {
         firstElement = false;
         request.UpdateExpression += "SET ";
       }
+      request.UpdateExpression = request.UpdateExpression.replace(
+        "SET ,", "SET");
 
       var value = null;
       // Remove any elements that specified in removes json
-      if(
-        typeof _.get(original, expr.name)[0] === "object" ||
-        typeof _.get(removes, expr.name)[0] === "object"
-      ) {
+      if(typeof _.get(original, expr.name)[0] === "object" || typeof _.get(
+          removes, expr.name)[0] === "object") {
         if(typeof itemUniqueId === 'undefined' || itemUniqueId == null) {
           console.error(
             "Found object in a list, but no itemUniqueId parameter specified"
@@ -291,12 +332,32 @@ var removeExpressionGenerator = function (original, removes, compareResult,
           value = _.xorBy(_.get(original, expr.name), _.get(removes, expr
             .name), itemUniqueId);
         }
-      } else
+      } else {
         value = _.xor(_.get(original, expr.name), _.get(removes, expr.name));
+      }
 
-      request.UpdateExpression += "#" + propName + " = :" + propName + "";
-      request.ExpressionAttributeNames["#" + propName] = expr.name;
-      request.ExpressionAttributeValues[":" + propName] = value;
+      splittedByDotPropName = expr.name.split(".");
+      propNameExpressionName = "#" + splittedByDotPropName.join(".#");
+      splittedByDotPropName.forEach(function (partialName) {
+        request.ExpressionAttributeNames["#" + partialName] =
+          partialName;
+      });
+      propNameExpressionValue = ":" + propName.replace(/\./g, "");
+
+      if(value.length === 0) {
+        if(request.UpdateExpression.indexOf("REMOVE") > -1) {
+          request.UpdateExpression = request.UpdateExpression.replace(
+            "REMOVE", "REMOVE " + propNameExpressionName + ",");
+        } else {
+          request.UpdateExpression += " REMOVE " + propNameExpressionName;
+        }
+
+      } else {
+        request.UpdateExpression += propNameExpressionName + " = " +
+          propNameExpressionValue + "";
+        request.ExpressionAttributeValues[propNameExpressionValue] =
+          value;
+      }
     }
   });
 

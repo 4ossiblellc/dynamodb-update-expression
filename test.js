@@ -79,11 +79,14 @@ describe('update expression', function () {
     var result = generator.getUpdateExpression(original, updates);
     console.log("Test Result", JSON.stringify(result, null, 4));
     test.should(result.UpdateExpression).be.equal(
-      'SET #lastName = :lastName, #phones = :phones, #family = :family, #profilebusinesswebsite = :profilebusinesswebsite, #profilebusinessphone = :profilebusinessphone, #profileoffice = :profileoffice REMOVE #profilecompany'
+      'SET #lastName = :lastName , #phones = :phones , #family = :family , #profile.#business.#website = :profilebusinesswebsite , #profile.#business.#phone = :profilebusinessphone , #profile.#office = :profileoffice  REMOVE #profile.#company'
     );
-    test.should(result.ExpressionAttributeNames["#profilecompany"])
+    test.should(result.ExpressionAttributeNames["#profile"])
       .be
-      .equal('profile.company');
+      .equal('profile');
+    test.should(result.ExpressionAttributeNames["#company"])
+      .be
+      .equal('company');
     test.should(result.ExpressionAttributeValues[":lastName"]).be
       .equal('L. Doe');
     test.should(result.ExpressionAttributeValues[
@@ -102,17 +105,16 @@ describe('update expression', function () {
       var result = generator.getRemoveExpression(original, removes, "id");
       console.log("Test Result", JSON.stringify(result, null, 4));
       test.should(result.UpdateExpression).be.equal(
-        'REMOVE #profilebusinesswebsite SET #family = :family, #phones = :phones'
+        'REMOVE #family, #profile.#business.#website SET #phones = :phones'
       );
       test.should(result.ExpressionAttributeNames[
-        "#profilebusinesswebsite"]).be.equal("profile.business.website");
+        "#profile"]).be.equal("profile");
+      test.should(result.ExpressionAttributeNames[
+        "#business"]).be.equal("business");
+      test.should(result.ExpressionAttributeNames[
+        "#website"]).be.equal("website");
       test.object(result.ExpressionAttributeValues[
         ":phones"]).isArray();
-      test.object(result.ExpressionAttributeValues[
-        ":family"]).isArray();
-      test.should(result.ExpressionAttributeValues[
-        ":family"]).have.length(
-        0);
       test.should(result.ExpressionAttributeValues[":phones"][0])
         .be
         .equal('5555-4444-555');
