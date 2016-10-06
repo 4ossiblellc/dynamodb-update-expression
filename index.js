@@ -96,7 +96,6 @@ var deepDiffMapper = function () {
 var updateExpressionGenerator = function (compareResult, options, path,
   excludeFields) {
 
-  console.log(JSON.stringify(compareResult, null, 4));
   var request = {
     UpdateExpression: "",
     ExpressionAttributeNames: {},
