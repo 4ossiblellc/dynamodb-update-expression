@@ -1,6 +1,6 @@
 {
   "name": "dynamodb-update-expression",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "A small library providing the solution to return the update expression.",
   "main": "index.js",
   "scripts": {
