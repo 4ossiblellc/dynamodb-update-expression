@@ -15,7 +15,7 @@ A small library providing the solution to generate DynamoDB update expression by
   var dynamodbUpdateExpression = require('dynamodb-update-expression');
 
   var updateExpression = dynamodbUpdateExpression.getUpdateExpression(original, update);
-  var removeExpression = dynamodbUpdateExpression.getUpdateExpression(original, remove);
+  var removeExpression = dynamodbUpdateExpression.getRemoveExpression(original, remove);
   ```
 
   Where original, update, and remove should be a JSON object.
