@@ -3,6 +3,14 @@ dynamodb-update-expression
 
 A small library providing the solution to generate DynamoDB update expression by comparing the original data with update/remove JSON object.
 
+## Release History
+
+* 0.1.16 Fix issue #6
+* 0.1.15 updated the dependencies library, especially there is a fix for array object in deepmerge module
+* 0.1.14 resolve #5 update the README.md
+* 0.1.13 Cleaned up an unnecessary console.log for issue #3
+* 0.1.0 Initial release
+
 ## Installation
 
   ```sh
@@ -153,8 +161,3 @@ Sample output
   mocha test.js
 
 ## Contributing
-
-
-## Release History
-
-* 0.1.0 Initial release
