@@ -102,6 +102,12 @@ var updateExpressionGenerator = function (compareResult, options, path,
     ExpressionAttributeValues: {}
   };
 
+
+  var setExpression = "";
+  var hasSetExpression = false;
+  var removeExpression = "";
+  var hasRemoveExpression = false;
+
   var filterOutDeleteFields = function (obj, path) {
     var wholeList = {
       updateList: [],
@@ -154,12 +160,6 @@ var updateExpressionGenerator = function (compareResult, options, path,
 
   var wholeList = filterOutDeleteFields(compareResult, null);
   wholeList.updateList.forEach(function (expr) {
-    if(request.UpdateExpression !== '') {
-      request.UpdateExpression += ', ';
-    } else {
-      request.UpdateExpression += "SET ";
-    }
-
     // change this logic to have # in front of .
     var propName = expr.name.replace(/&/g, "").replace(/_/g, "").replace(
       /\[/g, "").replace(/\]/g, "");
@@ -172,21 +172,22 @@ var updateExpressionGenerator = function (compareResult, options, path,
     });
     var propNameExpressionValue = ":" + propName.replace(/\./g, "");
 
-    request.UpdateExpression += propNameExpressionName + " = " +
-      propNameExpressionValue + " ";
+    if (hasSetExpression)
+    {
+      setExpression += ", "+propNameExpressionName + " = " + propNameExpressionValue + "";
+    } else
+    {
+      setExpression += "SET "+propNameExpressionName + " = " + propNameExpressionValue + "";
+      hasSetExpression = true;
+    }
+
+
     request.ExpressionAttributeValues[propNameExpressionValue] = expr.value;
   });
 
   wholeList.removeList.forEach(function (expr, index) {
-    if(index === 0) {
-      request.UpdateExpression += (request.UpdateExpression.length > 0 ?
-        " " : "") + "REMOVE ";
-    } else {
-      request.UpdateExpression += ", ";
-    }
-
-    var propName = expr.name.replace(/&/g, "").replace(/_/g, "").replace(
-      /\[/g, "").replace(/\]/g, "");
+    // var propName = expr.name.replace(/&/g, "").replace(/_/g, "").replace(
+    //   /\[/g, "").replace(/\]/g, "");
 
     var splittedByDotPropName = expr.name.split(".");
     var propNameExpressionName = "#" + splittedByDotPropName.join(".#");
@@ -195,11 +196,32 @@ var updateExpressionGenerator = function (compareResult, options, path,
         partialName;
     });
 
-    request.UpdateExpression += propNameExpressionName;
+    if (hasRemoveExpression)
+    {
+      removeExpression += ", "+propNameExpressionName+ "";
+    } else
+    {
+      removeExpression += "REMOVE "+propNameExpressionName+ "";
+      hasRemoveExpression = true;
+    }
+
   });
 
   if(isEmpty(request.ExpressionAttributeNames)) {
     delete request.ExpressionAttributeNames;
+  }
+
+  if (hasSetExpression && hasRemoveExpression)
+  {
+    request.UpdateExpression = setExpression.trim()+" "+removeExpression.trim();
+  } else
+  if (hasSetExpression)
+  {
+    request.UpdateExpression = setExpression.trim();
+  } else
+  if (hasRemoveExpression)
+  {
+    request.UpdateExpression = removeExpression.trim();
   }
 
   return request;
@@ -214,6 +236,11 @@ var removeExpressionGenerator = function (original, removes, compareResult,
     ExpressionAttributeNames: {},
     ExpressionAttributeValues: {}
   };
+
+  var setExpression = "";
+  var hasSetExpression = false;
+  var removeExpression = "";
+  var hasRemoveExpression = false;
 
   var filterOutCreateFields = function (obj, path) {
     var updateList = [];
@@ -263,12 +290,6 @@ var removeExpressionGenerator = function (original, removes, compareResult,
     var splittedByDotPropName, propNameExpressionName;
 
     if(expr.dataType !== "list") {
-      if(request.UpdateExpression !== "") {
-        request.UpdateExpression += ", ";
-      } else {
-        request.UpdateExpression += "REMOVE ";
-      }
-
       splittedByDotPropName = expr.name.split(".");
       propNameExpressionName = "#" + splittedByDotPropName.join(".#");
       splittedByDotPropName.forEach(function (partialName) {
@@ -276,14 +297,18 @@ var removeExpressionGenerator = function (original, removes, compareResult,
           partialName;
       });
 
-      request.UpdateExpression += propNameExpressionName + " ";
-    } else if(expr.value && expr.value.length === 0) {
-      if(request.UpdateExpression !== "") {
-        request.UpdateExpression += ", ";
-      } else {
-        request.UpdateExpression += "REMOVE ";
+      if (hasRemoveExpression)
+      {
+        removeExpression += ", "+propNameExpressionName + "";
+      } else
+      {
+        removeExpression += "REMOVE "+propNameExpressionName+"";
+        hasRemoveExpression = true;
       }
 
+    }
+    else
+    if(expr.value && expr.value.length === 0) {
       splittedByDotPropName = expr.name.split(".");
       propNameExpressionName = "#" + splittedByDotPropName.join(".#");
       splittedByDotPropName.forEach(function (partialName) {
@@ -291,12 +316,20 @@ var removeExpressionGenerator = function (original, removes, compareResult,
           partialName;
       });
 
-      request.UpdateExpression += propNameExpressionName + " ";
+      if (hasRemoveExpression)
+      {
+        removeExpression += ", "+propNameExpressionName + "";
+      } else
+      {
+        removeExpression += "REMOVE "+propNameExpressionName+"";
+        hasRemoveExpression = true;
+      }
+
     }
   });
 
   // List element updates
-  var firstElement = true;
+
   updateList.forEach(function (expr) {
     var propName = expr.name.replace(/&/g, "").replace(/_/g, "").replace(
       /\[/g, "").replace(/\]/g, "");
@@ -307,16 +340,6 @@ var removeExpressionGenerator = function (original, removes, compareResult,
     if(expr.dataType !== "list") {
 
     } else {
-
-      if(!firstElement) {
-        request.UpdateExpression += ", ";
-      } else {
-        firstElement = false;
-        request.UpdateExpression += "SET ";
-      }
-      request.UpdateExpression = request.UpdateExpression.replace(
-        "SET ,", "SET");
-
       var value = null;
       // Remove any elements that specified in removes json
       if(typeof _.get(original, expr.name)[0] === "object" || typeof _.get(
@@ -344,18 +367,31 @@ var removeExpressionGenerator = function (original, removes, compareResult,
       propNameExpressionValue = ":" + propName.replace(/\./g, "");
 
       if(value.length === 0) {
-        if(request.UpdateExpression.indexOf("REMOVE") > -1) {
-          request.UpdateExpression = request.UpdateExpression.replace(
-            "REMOVE", "REMOVE " + propNameExpressionName + ",");
+        // Remove
+        if(hasRemoveExpression) {
+          // subsequent elements
+          removeExpression += ", "+propNameExpressionName;
         } else {
-          request.UpdateExpression += " REMOVE " + propNameExpressionName;
+          // first element
+          removeExpression = "REMOVE " + propNameExpressionName+"";
+          hasRemoveExpression = true;
         }
 
       } else {
-        request.UpdateExpression += propNameExpressionName + " = " +
-          propNameExpressionValue + "";
+        // Set/Update
         request.ExpressionAttributeValues[propNameExpressionValue] =
           value;
+
+        if (hasSetExpression) {
+          // Subsequent element
+          setExpression += ", "+propNameExpressionName + " = " +
+              propNameExpressionValue+"";
+        } else
+        {
+          setExpression = "SET "+propNameExpressionName + " = " +
+              propNameExpressionValue+"";
+          hasSetExpression = true;
+        }
       }
     }
   });
@@ -367,6 +403,19 @@ var removeExpressionGenerator = function (original, removes, compareResult,
 
   if(isEmpty(request.ExpressionAttributeValues)) {
     delete request.ExpressionAttributeValues;
+  }
+
+  if (hasSetExpression && hasRemoveExpression)
+  {
+    request.UpdateExpression = removeExpression.trim()+" "+setExpression.trim();
+  } else
+  if (hasSetExpression)
+  {
+    request.UpdateExpression = setExpression.trim();
+  } else
+  if (hasRemoveExpression)
+  {
+    request.UpdateExpression = removeExpression.trim();
   }
 
   return request;
