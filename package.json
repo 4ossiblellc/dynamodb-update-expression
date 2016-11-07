@@ -1,6 +1,6 @@
 {
   "name": "dynamodb-update-expression",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "description": "A small library providing the solution to return the update expression.",
   "main": "index.js",
   "scripts": {
@@ -25,14 +25,14 @@
     "expression"
   ],
   "dependencies": {
-    "deepmerge": "^0.2.10",
+    "deepmerge": "^1.2.0",
     "lodash": "^4.16.1"
   },
   "devDependencies": {
     "chai": "^3.5.0",
     "browserify": "^13.0.1",
     "leche": "^2.1.1",
-    "mocha": "^2.4.5",
+    "mocha": "^3.1.2",
     "sinon": "^1.17.4",
     "uglifyjs": "^2.4.10",
     "unit.js": "^2.0.0"
