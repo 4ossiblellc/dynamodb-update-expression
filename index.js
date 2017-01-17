@@ -172,12 +172,10 @@ var updateExpressionGenerator = function (compareResult, options, path,
     });
     var propNameExpressionValue = ":" + propName.replace(/\./g, "");
 
-    if (hasSetExpression)
-    {
-      setExpression += ", "+propNameExpressionName + " = " + propNameExpressionValue + "";
-    } else
-    {
-      setExpression += "SET "+propNameExpressionName + " = " + propNameExpressionValue + "";
+    if(hasSetExpression) {
+      setExpression += ", " + propNameExpressionName + " = " + propNameExpressionValue + "";
+    } else {
+      setExpression += "SET " + propNameExpressionName + " = " + propNameExpressionValue + "";
       hasSetExpression = true;
     }
 
@@ -196,12 +194,10 @@ var updateExpressionGenerator = function (compareResult, options, path,
         partialName;
     });
 
-    if (hasRemoveExpression)
-    {
-      removeExpression += ", "+propNameExpressionName+ "";
-    } else
-    {
-      removeExpression += "REMOVE "+propNameExpressionName+ "";
+    if(hasRemoveExpression) {
+      removeExpression += ", " + propNameExpressionName + "";
+    } else {
+      removeExpression += "REMOVE " + propNameExpressionName + "";
       hasRemoveExpression = true;
     }
 
@@ -211,16 +207,13 @@ var updateExpressionGenerator = function (compareResult, options, path,
     delete request.ExpressionAttributeNames;
   }
 
-  if (hasSetExpression && hasRemoveExpression)
-  {
-    request.UpdateExpression = setExpression.trim()+" "+removeExpression.trim();
+  if(hasSetExpression && hasRemoveExpression) {
+    request.UpdateExpression = setExpression.trim() + " " + removeExpression.trim();
   } else
-  if (hasSetExpression)
-  {
+  if(hasSetExpression) {
     request.UpdateExpression = setExpression.trim();
   } else
-  if (hasRemoveExpression)
-  {
+  if(hasRemoveExpression) {
     request.UpdateExpression = removeExpression.trim();
   }
 
@@ -297,17 +290,14 @@ var removeExpressionGenerator = function (original, removes, compareResult,
           partialName;
       });
 
-      if (hasRemoveExpression)
-      {
-        removeExpression += ", "+propNameExpressionName + "";
-      } else
-      {
-        removeExpression += "REMOVE "+propNameExpressionName+"";
+      if(hasRemoveExpression) {
+        removeExpression += ", " + propNameExpressionName + "";
+      } else {
+        removeExpression += "REMOVE " + propNameExpressionName + "";
         hasRemoveExpression = true;
       }
 
-    }
-    else
+    } else
     if(expr.value && expr.value.length === 0) {
       splittedByDotPropName = expr.name.split(".");
       propNameExpressionName = "#" + splittedByDotPropName.join(".#");
@@ -316,12 +306,10 @@ var removeExpressionGenerator = function (original, removes, compareResult,
           partialName;
       });
 
-      if (hasRemoveExpression)
-      {
-        removeExpression += ", "+propNameExpressionName + "";
-      } else
-      {
-        removeExpression += "REMOVE "+propNameExpressionName+"";
+      if(hasRemoveExpression) {
+        removeExpression += ", " + propNameExpressionName + "";
+      } else {
+        removeExpression += "REMOVE " + propNameExpressionName + "";
         hasRemoveExpression = true;
       }
 
@@ -370,10 +358,10 @@ var removeExpressionGenerator = function (original, removes, compareResult,
         // Remove
         if(hasRemoveExpression) {
           // subsequent elements
-          removeExpression += ", "+propNameExpressionName;
+          removeExpression += ", " + propNameExpressionName;
         } else {
           // first element
-          removeExpression = "REMOVE " + propNameExpressionName+"";
+          removeExpression = "REMOVE " + propNameExpressionName + "";
           hasRemoveExpression = true;
         }
 
@@ -382,14 +370,13 @@ var removeExpressionGenerator = function (original, removes, compareResult,
         request.ExpressionAttributeValues[propNameExpressionValue] =
           value;
 
-        if (hasSetExpression) {
+        if(hasSetExpression) {
           // Subsequent element
-          setExpression += ", "+propNameExpressionName + " = " +
-              propNameExpressionValue+"";
-        } else
-        {
-          setExpression = "SET "+propNameExpressionName + " = " +
-              propNameExpressionValue+"";
+          setExpression += ", " + propNameExpressionName + " = " +
+            propNameExpressionValue + "";
+        } else {
+          setExpression = "SET " + propNameExpressionName + " = " +
+            propNameExpressionValue + "";
           hasSetExpression = true;
         }
       }
@@ -405,21 +392,44 @@ var removeExpressionGenerator = function (original, removes, compareResult,
     delete request.ExpressionAttributeValues;
   }
 
-  if (hasSetExpression && hasRemoveExpression)
-  {
-    request.UpdateExpression = removeExpression.trim()+" "+setExpression.trim();
+  if(hasSetExpression && hasRemoveExpression) {
+    request.UpdateExpression = removeExpression.trim() + " " + setExpression.trim();
   } else
-  if (hasSetExpression)
-  {
+  if(hasSetExpression) {
     request.UpdateExpression = setExpression.trim();
   } else
-  if (hasRemoveExpression)
-  {
+  if(hasRemoveExpression) {
     request.UpdateExpression = removeExpression.trim();
   }
 
   return request;
 };
+
+// make sure the ES5 Array.isArray() method exists
+if(!Array.isArray) {
+  Array.isArray = function (arg) {
+    return Object.prototype.toString.call(arg) === '[object Array]';
+  };
+}
+
+function emptyArrays(data) {
+  for(var key in data) {
+    if(key !== undefined) {
+      // console.log("key: ", key);
+      var item = data[key];
+      if(item !== undefined && Array.isArray(item)) {
+        // see if the array is empty
+        // remove this item from the parent object
+        // console.log("deleting the item:" + JSON.stringify(item));
+        data[key] = [];
+        // if this item is an object, then recurse into it
+        // to remove empty arrays in it too
+      } else if(item !== undefined && typeof item === "object") {
+        emptyArrays(item);
+      }
+    }
+  }
+}
 
 
 exports.generateRemoveExpression = function (original, removes, itemUniqueId) {
@@ -428,6 +438,13 @@ exports.generateRemoveExpression = function (original, removes, itemUniqueId) {
 };
 
 exports.generateUpdateExpression = function (original, updates, options) {
+
+  if(options.arrayMerge && options.arrayMerge === "replaceMerge") {
+    emptyArrays(original);
+    delete options.arrayMerge;
+    console.log(original);
+  }
+
   var merged = merge(original, updates);
   return updateExpressionGenerator(deepDiffMapper.map(
     original, merged
