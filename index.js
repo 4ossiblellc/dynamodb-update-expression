@@ -439,7 +439,7 @@ exports.generateRemoveExpression = function (original, removes, itemUniqueId) {
 
 exports.generateUpdateExpression = function (original, updates, options) {
 
-  if(options.arrayMerge && options.arrayMerge === "replaceMerge") {
+  if(options && options.arrayMerge && options.arrayMerge === "replaceMerge") {
     emptyArrays(original);
     delete options.arrayMerge;
   }
