@@ -5,6 +5,7 @@ A small library providing the solution to generate DynamoDB update expression by
 
 ## Release History
 
+* 0.1.18 remove extra logs from .17
 * 0.1.17 Fix issue #7
 * 0.1.16 Fix issue #6
 * 0.1.15 updated the dependencies library, especially there is a fix for array object in deepmerge module

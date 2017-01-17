@@ -442,10 +442,10 @@ exports.generateUpdateExpression = function (original, updates, options) {
   if(options.arrayMerge && options.arrayMerge === "replaceMerge") {
     emptyArrays(original);
     delete options.arrayMerge;
-    console.log(original);
   }
 
   var merged = merge(original, updates);
+
   return updateExpressionGenerator(deepDiffMapper.map(
     original, merged
   ), options, null);

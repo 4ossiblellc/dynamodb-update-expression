@@ -142,8 +142,12 @@ describe('update expression with options', function () {
     "family": [
       {
         "id": 1,
-        "role": "father"
-      }
+        "role": "brother"
+      },
+      {
+        "id": 2,
+        "role": "mother"
+      } // Original will be REPLACED by this (because of: deepmerge library bug)
       ],
     "profile": {
       "jobTitle": "Manager",
@@ -166,12 +170,8 @@ describe('update expression with options', function () {
     "family": [
       {
         "id": 1,
-        "role": "brother"
-      },
-      {
-        "id": 2,
-        "role": "mother"
-      } // Original will be REPLACED by this (because of: deepmerge library bug)
+        "role": "father"
+      }
       ],
     // Nested Object
     "profile": {
@@ -210,7 +210,7 @@ describe('update expression with options', function () {
       .be.equal(2);
     test.object(result.ExpressionAttributeValues[":family"]).isArray();
     test.should(result.ExpressionAttributeValues[":family"][0].role)
-      .be.equal('brother');
+      .be.equal('father');
     done();
   });
 
