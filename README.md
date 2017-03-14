@@ -5,6 +5,7 @@ A small library providing the solution to generate DynamoDB update expression by
 
 ## Release History
 
+* 0.1.20 Issue #8 Remove colon characters from attribute names
 * 0.1.19 fix the error when options is defined or null
 * 0.1.18 remove extra logs from .17
 * 0.1.17 Fix issue #7
