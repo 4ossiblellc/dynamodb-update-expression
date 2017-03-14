@@ -3,23 +3,23 @@ var test = require("unit.js");
 var generator = require("./../index.js");
 
 var original = {
-    "prefix:key": "value",
-    "prefix:list": ["list value"],
-    "prefix:group": {
-        "prefix:group:key": "group value"
+    "prefix:#key": "value",
+    "prefix:#list": ["list value"],
+    "prefix:#group": {
+        "prefix:#group:key": "group value"
     }
 };
 
 describe("update expression", function () {
-    it("removes colon `:` from attribute names", function () {
+    it("removes special characters from attribute names", function () {
         var updates = {
-            "prefix:key": "update value",
-            "prefix:list": ["new list value"],
-            "prefix:group": {
-                "prefix:group:key": "update group value"
+            "prefix:#key": "update value",
+            "prefix:#list": ["new list value"],
+            "prefix:#group": {
+                "prefix:#group:key": "update group value"
             },
-            "prefix:new:group": {
-                "prefix:group:key": "new group value"
+            "prefix:#new:group": {
+                "prefix:#group:key": "new group value"
             }
         };
 
@@ -30,27 +30,27 @@ describe("update expression", function () {
             "SET #prefixkey = :prefixkey, #prefixlist = :prefixlist, #prefixgroup.#prefixgroupkey = :prefixgroupprefixgroupkey, #prefixnewgroup = :prefixnewgroup"
         );
 
-        test.should(result.ExpressionAttributeNames["#prefixkey"]).be.equal("prefix:key");
-        test.should(result.ExpressionAttributeNames["#prefixlist"]).be.equal("prefix:list");
-        test.should(result.ExpressionAttributeNames["#prefixgroup"]).be.equal("prefix:group");
-        test.should(result.ExpressionAttributeNames["#prefixgroupkey"]).be.equal("prefix:group:key");
-        test.should(result.ExpressionAttributeNames["#prefixnewgroup"]).be.equal("prefix:new:group");
+        test.should(result.ExpressionAttributeNames["#prefixkey"]).be.equal("prefix:#key");
+        test.should(result.ExpressionAttributeNames["#prefixlist"]).be.equal("prefix:#list");
+        test.should(result.ExpressionAttributeNames["#prefixgroup"]).be.equal("prefix:#group");
+        test.should(result.ExpressionAttributeNames["#prefixgroupkey"]).be.equal("prefix:#group:key");
+        test.should(result.ExpressionAttributeNames["#prefixnewgroup"]).be.equal("prefix:#new:group");
 
         test.should(result.ExpressionAttributeValues[":prefixkey"]).be.equal("update value");
         test.should(result.ExpressionAttributeValues[":prefixlist"]).be.eql(["list value", "new list value"]);
         test.should(result.ExpressionAttributeValues[":prefixgroupprefixgroupkey"]).be.equal("update group value");
-        test.should(result.ExpressionAttributeValues[":prefixnewgroup"]).be.eql({ "prefix:group:key": "new group value" });
+        test.should(result.ExpressionAttributeValues[":prefixnewgroup"]).be.eql({ "prefix:#group:key": "new group value" });
     });
 
-    it("removes colon `:` from attribute names (with remove)", function () {
+    it("removes special characters from attribute names (with remove)", function () {
         var updates = {
-            "prefix:key": "", // remove key
-            "prefix:list": ["new list value"],
-            "prefix:group": {
-                "prefix:group:key": "update group value"
+            "prefix:#key": "", // remove key
+            "prefix:#list": ["new list value"],
+            "prefix:#group": {
+                "prefix:#group:key": "update group value"
             },
-            "prefix:new:group": {
-                "prefix:group:key": "new group value"
+            "prefix:#new:group": {
+                "prefix:#group:key": "new group value"
             }
         };
 
@@ -61,25 +61,25 @@ describe("update expression", function () {
             "SET #prefixlist = :prefixlist, #prefixgroup.#prefixgroupkey = :prefixgroupprefixgroupkey, #prefixnewgroup = :prefixnewgroup REMOVE #prefixkey"
         );
 
-        test.should(result.ExpressionAttributeNames["#prefixlist"]).be.equal("prefix:list");
-        test.should(result.ExpressionAttributeNames["#prefixgroup"]).be.equal("prefix:group");
-        test.should(result.ExpressionAttributeNames["#prefixgroupkey"]).be.equal("prefix:group:key");
-        test.should(result.ExpressionAttributeNames["#prefixnewgroup"]).be.equal("prefix:new:group");
-        test.should(result.ExpressionAttributeNames["#prefixkey"]).be.equal("prefix:key");
+        test.should(result.ExpressionAttributeNames["#prefixlist"]).be.equal("prefix:#list");
+        test.should(result.ExpressionAttributeNames["#prefixgroup"]).be.equal("prefix:#group");
+        test.should(result.ExpressionAttributeNames["#prefixgroupkey"]).be.equal("prefix:#group:key");
+        test.should(result.ExpressionAttributeNames["#prefixnewgroup"]).be.equal("prefix:#new:group");
+        test.should(result.ExpressionAttributeNames["#prefixkey"]).be.equal("prefix:#key");
 
         test.should(result.ExpressionAttributeValues[":prefixlist"]).be.eql(["list value", "new list value"]);
         test.should(result.ExpressionAttributeValues[":prefixgroupprefixgroupkey"]).be.equal("update group value");
-        test.should(result.ExpressionAttributeValues[":prefixnewgroup"]).be.eql({ "prefix:group:key": "new group value" });
+        test.should(result.ExpressionAttributeValues[":prefixnewgroup"]).be.eql({ "prefix:#group:key": "new group value" });
     });
 });
 
 describe("remove expression", function () {
-    it("removes colon `:` from attribute names", function () {
+    it("removes special characters from attribute names", function () {
         var removes = {
-            "prefix:key": "remove value",
-            "prefix:list": ["list value"],
-            "prefix:group": {
-                "prefix:group:key": "remove group value"
+            "prefix:#key": "remove value",
+            "prefix:#list": ["list value"],
+            "prefix:#group": {
+                "prefix:#group:key": "remove group value"
             }
         };
 
@@ -90,18 +90,18 @@ describe("remove expression", function () {
             "REMOVE #prefixkey, #prefixgroup.#prefixgroupkey, #prefixlist"
         );
 
-        test.should(result.ExpressionAttributeNames["#prefixkey"]).be.equal("prefix:key");
-        test.should(result.ExpressionAttributeNames["#prefixgroup"]).be.equal("prefix:group");
-        test.should(result.ExpressionAttributeNames["#prefixgroupkey"]).be.equal("prefix:group:key");
-        test.should(result.ExpressionAttributeNames["#prefixlist"]).be.equal("prefix:list");
+        test.should(result.ExpressionAttributeNames["#prefixkey"]).be.equal("prefix:#key");
+        test.should(result.ExpressionAttributeNames["#prefixgroup"]).be.equal("prefix:#group");
+        test.should(result.ExpressionAttributeNames["#prefixgroupkey"]).be.equal("prefix:#group:key");
+        test.should(result.ExpressionAttributeNames["#prefixlist"]).be.equal("prefix:#list");
     });
 
-    it("removes colon `:` from attribute names (including modified lists)", function () {
+    it("removes special characters from attribute names (including modified lists)", function () {
         var removes = {
-            "prefix:key": "remove value",
-            "prefix:list": ["list value", "new list value"], // remove "list value"
-            "prefix:group": {
-                "prefix:group:key": "remove group value"
+            "prefix:#key": "remove value",
+            "prefix:#list": ["list value", "new list value"], // remove "list value"
+            "prefix:#group": {
+                "prefix:#group:key": "remove group value"
             }
         };
 
@@ -112,10 +112,10 @@ describe("remove expression", function () {
             "REMOVE #prefixkey, #prefixgroup.#prefixgroupkey SET #prefixlist = :prefixlist"
         );
 
-        test.should(result.ExpressionAttributeNames["#prefixkey"]).be.equal("prefix:key");
-        test.should(result.ExpressionAttributeNames["#prefixgroup"]).be.equal("prefix:group");
-        test.should(result.ExpressionAttributeNames["#prefixgroupkey"]).be.equal("prefix:group:key");
-        test.should(result.ExpressionAttributeNames["#prefixlist"]).be.equal("prefix:list");
+        test.should(result.ExpressionAttributeNames["#prefixkey"]).be.equal("prefix:#key");
+        test.should(result.ExpressionAttributeNames["#prefixgroup"]).be.equal("prefix:#group");
+        test.should(result.ExpressionAttributeNames["#prefixgroupkey"]).be.equal("prefix:#group:key");
+        test.should(result.ExpressionAttributeNames["#prefixlist"]).be.equal("prefix:#list");
 
         test.should(result.ExpressionAttributeValues[":prefixlist"]).be.eql(["new list value"]);
     });
