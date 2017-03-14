@@ -188,7 +188,7 @@ var updateExpressionGenerator = function (compareResult, options, path,
     //   /\[/g, "").replace(/\]/g, "");
 
     var splittedByDotPropName = expr.name.split(".");
-    var propNameExpressionName = "#" + splittedByDotPropName.join(".#");
+    var propNameExpressionName = "#" + splittedByDotPropName.join(".#").replace(/:/g, "");
     splittedByDotPropName.forEach(function (partialName) {
       request.ExpressionAttributeNames["#" + partialName.replace(/:/g, "")] =
         partialName;
