@@ -135,9 +135,7 @@ var updateExpressionGenerator = function (compareResult, options, path,
           wholeList.removeList.push({
             "name": (path ? path + "." : "") + i,
           });
-        } else if((obj[i].type === "updated" || obj[i].type === "created") &&
-          obj[
-            i].data) {
+        } else if((obj[i].type === "updated" || obj[i].type === "created") && obj[i].data !== undefined) {
           //console.log("pushed => " + obj[i].dataType, (path ?  path + "." : "") +  i + " = " + obj[i].data);
           wholeList.updateList.push({
             "name": (path ? path + "." : "") + i,
