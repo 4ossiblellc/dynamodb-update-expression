@@ -3,7 +3,7 @@
  * Created by jazarja, 4ossiblellc on 9/20/16.
  */
 
-var merge = require('deepmerge');
+var merge = require('deepmerge').default;
 var _ = require('lodash');
 
 var isEmpty = function (map) {
