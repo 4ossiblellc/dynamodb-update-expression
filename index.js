@@ -3,8 +3,13 @@
  * Created by jazarja, 4ossiblellc on 9/20/16.
  */
 
-var merge = require('deepmerge');
 var _ = require('lodash');
+var merge = require('deepmerge');
+
+// Webpack specific case
+if (typeof merge !== 'function') {
+  merge = merge.default
+}
 
 var isEmpty = function (map) {
   for(var key in map) {
