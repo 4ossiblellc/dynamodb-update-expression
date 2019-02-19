@@ -102,6 +102,10 @@ var removeSpecialChars = function (s) {
   return s.replace(/\./g, "").replace(/:/g, "").replace(/#/g, "");
 };
 
+var removeSpecialCharsInExpression = function (s) {
+  return s.replace(/\./g, "").replace(/:/g, "").replace(/#/g, "").replace(/-/g, "")
+};
+
 var updateExpressionGenerator = function (compareResult, options, path,
   excludeFields) {
 
@@ -172,12 +176,12 @@ var updateExpressionGenerator = function (compareResult, options, path,
       /\[/g, "").replace(/\]/g, "");
 
     var splittedByDotPropName = expr.name.split(".");
-    var propNameExpressionName = "#" + splittedByDotPropName.map(removeSpecialChars).join(".#");
+    var propNameExpressionName = "#" + splittedByDotPropName.map(removeSpecialCharsInExpression).join(".#");
     splittedByDotPropName.forEach(function (partialName) {
-      request.ExpressionAttributeNames["#" + removeSpecialChars(partialName)] =
+      request.ExpressionAttributeNames["#" + removeSpecialCharsInExpression(partialName)] =
         partialName;
     });
-    var propNameExpressionValue = ":" + removeSpecialChars(propName);
+    var propNameExpressionValue = ":" + removeSpecialCharsInExpression(propName);
 
     if(hasSetExpression) {
       setExpression += ", " + propNameExpressionName + " = " + propNameExpressionValue + "";
