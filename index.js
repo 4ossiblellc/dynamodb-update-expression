@@ -155,7 +155,7 @@ var updateExpressionGenerator = function (compareResult, options, path,
         if((obj[i].type === undefined && obj[i].data === undefined) ||
           (obj[i].type && obj[i].type !== "deleted" && obj[i].type !==
             "unchanged")) {
-          var partial = isNaN(parseInt(i, 10)) ? "." + i : "[" + i + "]";
+          var partial = isNaN(Number(i)) ? "." + i : "[" + i + "]";
           name = path !== null ? path + partial : i;
           // console.log("- nested object ->", name, obj[i].dataType);
           var childList = filterOutDeleteFields(obj[i], name);
