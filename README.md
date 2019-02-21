@@ -5,6 +5,7 @@ A small library providing the solution to generate DynamoDB update expression by
 
 ## Release History
 
+* 0.1.22 Issue #17, #19
 * 0.1.21 Issue #10 Boolean values changing from true to false are not getting set
 * 0.1.20 Issue #8 Remove colon characters from attribute names
 * 0.1.19 fix the error when options is defined or null
